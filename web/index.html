@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+  <!-- interactive-widget=resizes-content tells Chrome 108+ to shrink the
+       layout viewport (not just the visual viewport) when the keyboard opens,
+       keeping Flutter's viewInsets in sync and preventing the blank-space gap. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="keyboardweb">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>keyboardweb</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Flutter manages all scrolling inside its own widget tree.
+       Locking html/body prevents the browser from scrolling the page
+       when the keyboard opens or closes, which is what causes the
+       blank space left behind after the dismiss button is pressed. */
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Belt-and-suspenders for older browsers / Safari where
+    // interactive-widget and overflow:hidden aren't enough.
+    // Any time the window scrolls, immediately snap back to 0,0.
+    // Flutter doesn't use window scroll — it's safe to block entirely.
+    window.addEventListener('scroll', function () {
+      window.scrollTo(0, 0);
+    }, { passive: true });
+
+    // On Safari the body can still scroll independently.
+    document.addEventListener('scroll', function () {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, { passive: true });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

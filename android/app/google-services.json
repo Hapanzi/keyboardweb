@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "154237708960",
+    "firebase_url": "https://online-exam-7581c-default-rtdb.firebaseio.com",
+    "project_id": "online-exam-7581c",
+    "storage_bucket": "online-exam-7581c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154237708960:android:b6b2e629020bc2671bb7c5",
+        "android_client_info": {
+          "package_name": "com.ananseba.keyboardweb"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc9AEzC4MSgvrQn7pIRQ4M_l9huSHgvY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154237708960:android:91f459b4ffad1a8c1bb7c5",
+        "android_client_info": {
+          "package_name": "com.ogidigital.eexamapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc9AEzC4MSgvrQn7pIRQ4M_l9huSHgvY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
