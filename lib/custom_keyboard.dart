@@ -2,18 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 
-// True when running on a narrow web viewport (mobile browser).
+/// Returns true when running on a narrow web viewport (mobile browser).
 bool isMobileWeb(BuildContext context) {
   if (!kIsWeb) return false;
   return MediaQuery.of(context).size.width < 800;
 }
 
-// ─── Keyboard modes ───────────────────────────────────────────────────────────
+// ── Key layout data ────────────────────────────────────────────────────────────
 
 enum _Mode { letters, numbers, superSub, symbols, emojis }
 
-// ─── Key layout data ──────────────────────────────────────────────────────────
-
+const _numTop = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 const _lettersRow1 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'];
 const _lettersRow2 = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'];
 const _lettersRow3 = ['z', 'x', 'c', 'v', 'b', 'n', 'm'];
@@ -23,9 +22,9 @@ const _numRow2 = ['-', '/', ':', ';', '(', ')', '&', '@', '"', "'"];
 const _numRow3 = ['.', ',', '?', '!', '#', '%', '^', '*', '+', '='];
 
 const _superRow1 = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
-const _subRow1   = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
-const _ssRow2    = ['⁺', '⁻', '⁼', '⁽', '⁾', '₊', '₋', '₌', '₍', '₎'];
-const _ssRow3    = ['ⁿ', 'ⁱ', 'ᵃ', 'ᵇ', 'ᶜ', 'ᵈ', 'ᵉ', 'ᶠ', 'ᵍ', 'ʰ'];
+const _subRow1 = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+const _ssRow2 = ['⁺', '⁻', '⁼', '⁽', '⁾', '₊', '₋', '₌', '₍', '₎'];
+const _ssRow3 = ['ⁿ', 'ⁱ', 'ᵃ', 'ᵇ', 'ᶜ', 'ᵈ', 'ᵉ', 'ᶠ', 'ᵍ', 'ʰ'];
 
 const _symRow1 = ['€', '£', '¥', '¢', '₹', '₽', '₩', '₪', '₫', '₺'];
 const _symRow2 = ['≈', '≠', '≤', '≥', '∞', '±', '÷', '×', '√', 'π'];
@@ -34,41 +33,149 @@ const _symRow4 = ['←', '→', '↑', '↓', '↔', '⇒', '⇔', '∑', '∫',
 
 const _emojis = [
   // Smileys
-  '😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😉',
-  '😊','😇','🥰','😍','🤩','😘','😋','😜','🤪','😎',
-  '🤔','😐','😑','😒','🙄','😬','🥺','😢','😭','😱',
-  '😤','😡','😠','🤬','😈','👿','💀','💩','🤡','👻',
+  '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '😉',
+  '😊', '😇', '🥰', '😍', '🤩', '😘', '😋', '😜', '🤪', '😎',
+  '🤔', '😐', '😑', '😒', '🙄', '😬', '🥺', '😢', '😭', '😱',
+  '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '💩', '🤡', '👻',
   // Hands
-  '👋','🤚','✋','👌','✌️','🤞','👍','👎','👊','✊',
-  '👏','🙌','🤝','🙏','💪','🤜','🤛','☝️','👆','👇',
+  '👋', '🤚', '✋', '👌', '✌️', '🤞', '👍', '👎', '👊', '✊',
+  '👏', '🙌', '🤝', '🙏', '💪', '🤜', '🤛', '☝️', '👆', '👇',
   // Hearts & nature
-  '❤️','🧡','💛','💚','💙','💜','🖤','🤍','💔','💕',
-  '💞','💓','💗','💖','💘','💝','❣️','🔥','✨','⭐',
-  '🌟','💫','🌈','⚡','❄️','🌊','🌸','🌺','🌻','🍀',
+  '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💔', '💕',
+  '💞', '💓', '💗', '💖', '💘', '💝', '❣️', '🔥', '✨', '⭐',
+  '🌟', '💫', '🌈', '⚡', '❄️', '🌊', '🌸', '🌺', '🌻', '🍀',
   // Animals
-  '🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐯','🦁','🐮',
-  '🐸','🐵','🦄','🐔','🐧','🐦','🦋','🐝','🦀','🐬',
-  '🦭','🐘','🦒','🦓','🦍','🐊','🐢','🦎','🐍','🦕',
+  '🐶', '🐱', '🐭', '🐰', '🦊', '🐻', '🐼', '🐯', '🦁', '🐮',
+  '🐸', '🐵', '🦄', '🐔', '🐧', '🐦', '🦋', '🐝', '🦀', '🐬',
+  '🦭', '🐘', '🦒', '🦓', '🦍', '🐊', '🐢', '🦎', '🐍', '🦕',
   // Food & drink
-  '🍎','🍊','🍋','🍌','🍉','🍇','🍓','🍔','🍟','🍕',
-  '🌮','🍜','🍣','🍱','🎂','🍰','🍩','🍪','🍫','☕',
-  '🧃','🥤','🍺','🍻','🥂','🍷','🧋','🍵','🥐','🧇',
+  '🍎', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍔', '🍟', '🍕',
+  '🌮', '🍜', '🍣', '🍱', '🎂', '🍰', '🍩', '🍪', '🍫', '☕',
+  '🧃', '🥤', '🍺', '🍻', '🥂', '🍷', '🧋', '🍵', '🥐', '🧇',
   // Objects & places
-  '📱','💻','🖥','⌨️','📷','📺','📻','💡','📚','📝',
-  '✏️','🔍','🔑','🔒','💰','💳','✈️','🚗','🚀','🌍',
-  '🏠','🎮','🎵','🎸','🎹','🎤','🎧','🎉','🏆','🥇',
+  '📱', '💻', '🖥', '⌨️', '📷', '📺', '📻', '💡', '📚', '📝',
+  '✏️', '🔍', '🔑', '🔒', '💰', '💳', '✈️', '🚗', '🚀', '🌍',
+  '🏠', '🎮', '🎵', '🎸', '🎹', '🎤', '🎧', '🎉', '🏆', '🥇',
   // Symbols
-  '💯','✅','❌','❗','❓','🔴','🟠','🟡','🟢','🔵',
-  '🟣','⚫','⚪','🟤','🔶','🔷','🔸','🔹','▶️','⏸️',
+  '💯', '✅', '❌', '❗', '❓', '🔴', '🟠', '🟡', '🟢', '🔵',
+  '🟣', '⚫', '⚪', '🟤', '🔶', '🔷', '🔸', '🔹', '▶️', '⏸️',
 ];
 
-// ─── Widget ───────────────────────────────────────────────────────────────────
+// ── Gboard-style color constants ──────────────────────────────────────────────
 
+const _kbBg = Color(0xFFD1D9E0);
+const _keyBg = Colors.white;
+const _keyBgPressed = Color(0xFFB0B8C0);
+const _specialKeyBg = Color(0xFFADB5BD);
+const _specialKeyBgPressed = Color(0xFF8A9199);
+const _accentColor = Color(0xFF007D7D);
+const _accentPressed = Color(0xFF005A5A);
+const _keyText = Color(0xFF1A1A1A);
+const _spaceTextColor = Color(0xFF475569);
+const _keyRadius = Radius.circular(6);
+const _keyShadow = BoxShadow(
+  color: Color(0x40000000),
+  offset: Offset(0, 1),
+  blurRadius: 1,
+);
+
+// ── Pressable key widget ───────────────────────────────────────────────────────
+//
+// Each key manages its own pressed state so a single tap never triggers
+// a rebuild of the whole keyboard.
+
+class _PressableKey extends StatefulWidget {
+  const _PressableKey({
+    required this.onTap,
+    required this.color,
+    required this.pressedColor,
+    required this.child,
+    this.width,
+    this.height,
+    this.margin = const EdgeInsets.symmetric(horizontal: 2),
+  });
+
+  final VoidCallback onTap;
+  final Color color;
+  final Color pressedColor;
+  final Widget child;
+  final double? width;
+  final double? height;
+  final EdgeInsets margin;
+
+  @override
+  State<_PressableKey> createState() => _PressableKeyState();
+}
+
+class _PressableKeyState extends State<_PressableKey> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        widget.onTap();
+        setState(() => _pressed = false);
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.88 : 1.0,
+        duration: const Duration(milliseconds: 80),
+        curve: Curves.easeOut,
+        child: Container(
+          width: widget.width,
+          height: widget.height,
+          margin: widget.margin,
+          decoration: BoxDecoration(
+            color: _pressed ? widget.pressedColor : widget.color,
+            borderRadius: const BorderRadius.all(_keyRadius),
+            boxShadow: _pressed ? const [] : const [_keyShadow],
+          ),
+          alignment: Alignment.center,
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
+// ── CustomKeyboard ─────────────────────────────────────────────────────────────
+
+/// A full-featured custom keyboard widget for Flutter web (mobile viewport).
+///
+/// Prevents the browser's native keyboard from opening — and therefore avoids
+/// the blank-area / viewport-resize bug that affects Flutter web on iOS/Android
+/// browsers.
+///
+/// Usage
+/// -----
+/// 1. Set `readOnly: true` and `keyboardType: TextInputType.none` on every
+///    [TextField] / [TextFormField] you want this keyboard to serve.
+/// 2. On tap of a field, call `FocusScope.of(context).requestFocus(focusNode)`
+///    and show this widget at the bottom of the screen.
+/// 3. Pass [controller] and [focusNode] to keep the field's cursor active.
+/// 4. Use [onDone] to hide the keyboard (e.g. when the user presses ↵).
+///
+/// See the README for a minimal working example.
 class CustomKeyboard extends StatefulWidget {
+  /// The controller of the active text field.
   final TextEditingController? controller;
+
+  /// The focus node of the active text field. Passed once on open; the keyboard
+  /// does NOT call [FocusNode.requestFocus] during typing (avoids select-all).
+  final FocusNode? focusNode;
+
+  /// Called when the user presses the ↵ (done / return) key.
   final VoidCallback? onDone;
 
-  const CustomKeyboard({super.key, this.controller, this.onDone});
+  const CustomKeyboard({
+    super.key,
+    this.controller,
+    this.focusNode,
+    this.onDone,
+  });
 
   @override
   State<CustomKeyboard> createState() => _CustomKeyboardState();
@@ -84,7 +191,7 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
     if (_hapticEnabled) HapticFeedback.lightImpact();
   }
 
-  // ── Input helpers ────────────────────────────────────────────────────────
+  // ── Input helpers ────────────────────────────────────────────────────────────
 
   void _insert(String char) {
     final ctrl = widget.controller;
@@ -106,7 +213,6 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
     final s = v.selection.start;
     final e = v.selection.end;
     if (s != e) {
-      // Delete selection
       final newText = v.text.replaceRange(s, e, '');
       ctrl.value = TextEditingValue(
         text: newText,
@@ -114,9 +220,9 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
       );
     } else {
       if (s <= 0) return;
-      // Use `characters` for correct Unicode grapheme cluster deletion
       final before = v.text.substring(0, s);
       final after = v.text.substring(s);
+      // characters.skipLast(1) handles multi-codepoint emoji correctly
       final newBefore = before.characters.skipLast(1).toString();
       ctrl.value = TextEditingValue(
         text: newBefore + after,
@@ -149,21 +255,18 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
     }
   }
 
-  // ── Build ────────────────────────────────────────────────────────────────
+  // ── Build ────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B0B18),
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-        ),
+      decoration: const BoxDecoration(
+        color: _kbBg,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 24,
-            offset: const Offset(0, -8),
+            color: Color(0x28000000),
+            blurRadius: 8,
+            offset: Offset(0, -2),
           ),
         ],
       ),
@@ -173,18 +276,18 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildModeBar(),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             if (_mode == _Mode.emojis) _buildEmojiGrid() else _buildKeyArea(),
             const SizedBox(height: 4),
             _buildBottomRow(),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
           ],
         ),
       ),
     );
   }
 
-  // ── Mode tab bar ─────────────────────────────────────────────────────────
+  // ── Mode tab bar ─────────────────────────────────────────────────────────────
 
   Widget _buildModeBar() {
     const tabs = [
@@ -194,9 +297,10 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
       ('∑', _Mode.symbols),
       ('😊', _Mode.emojis),
     ];
-    return Row(
-      children: [
-        ...tabs.map((t) {
+    return Container(
+      color: const Color(0xFFC8D0D8),
+      child: Row(
+        children: tabs.map((t) {
           final active = _mode == t.$2;
           return Expanded(
             child: GestureDetector(
@@ -206,14 +310,13 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
                 _capsLock = false;
               }),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
+                  color: active ? _kbBg : const Color(0xFFC8D0D8),
                   border: Border(
                     bottom: BorderSide(
-                      color: active
-                          ? const Color(0xFF6C3EF5)
-                          : Colors.white.withValues(alpha: 0.06),
-                      width: active ? 2 : 1,
+                      color: active ? _accentColor : Colors.transparent,
+                      width: 2,
                     ),
                   ),
                 ),
@@ -221,22 +324,20 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
                   t.$1,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: active
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.35),
-                    fontSize: 13,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                    color: active ? _accentColor : _spaceTextColor,
+                    fontSize: 12,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
               ),
             ),
           );
-        }),
-      ],
+        }).toList(),
+      ),
     );
   }
 
-  // ── Key area ─────────────────────────────────────────────────────────────
+  // ── Key area ─────────────────────────────────────────────────────────────────
 
   Widget _buildKeyArea() {
     List<List<String>> rows;
@@ -253,17 +354,50 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
         rows = [];
     }
 
-    return LayoutBuilder(builder: (context, constraints) {
-      // Base unit: fit 10 keys across with 2px side margin
-      final unit = (constraints.maxWidth - 8) / 10 - 4;
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ...rows.map((r) => _buildRow(r, unit)),
-          if (_mode == _Mode.letters) _buildShiftRow(unit),
-        ],
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final unit = (constraints.maxWidth - 8) / 10 - 4;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_mode == _Mode.letters) _buildNumberTopRow(unit),
+            ...rows.map((r) => _buildRow(r, unit)),
+            if (_mode == _Mode.letters) _buildShiftRow(unit),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildNumberTopRow(double unit) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: _numTop
+            .map(
+              (k) => _PressableKey(
+                width: unit,
+                height: 38,
+                onTap: () {
+                  _haptic();
+                  _insert(k);
+                },
+                color: _specialKeyBg,
+                pressedColor: _specialKeyBgPressed,
+                child: Text(
+                  k,
+                  style: const TextStyle(
+                    color: _keyText,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
   }
 
   Widget _buildRow(List<String> keys, double unit) {
@@ -283,99 +417,69 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Shift
-          _specialKey(
+          _PressableKey(
             width: unit * 1.5 + 4,
-            active: shiftActive,
+            height: 44,
+            onTap: () => _onKey('⇧'),
+            color: shiftActive ? _accentColor : _specialKeyBg,
+            pressedColor: shiftActive ? _accentPressed : _specialKeyBgPressed,
             child: Icon(
               _capsLock
                   ? Icons.keyboard_capslock_rounded
                   : Icons.keyboard_arrow_up_rounded,
-              color: shiftActive
-                  ? Colors.white
-                  : Colors.white.withValues(alpha: 0.7),
+              color: shiftActive ? Colors.white : _keyText,
               size: 18,
             ),
-            onTap: () => _onKey('⇧'),
           ),
           ..._lettersRow3.map((k) => _key(k, unit)),
-          // Backspace
-          _specialKey(
+          _PressableKey(
             width: unit * 1.5 + 4,
-            active: false,
-            child: Icon(Icons.backspace_outlined,
-                color: Colors.white.withValues(alpha: 0.7), size: 16),
-            onTap: _backspace,
+            height: 44,
+            onTap: () {
+              _haptic();
+              _backspace();
+            },
+            color: _specialKeyBg,
+            pressedColor: _specialKeyBgPressed,
+            child: const Icon(
+              Icons.backspace_outlined,
+              color: _keyText,
+              size: 16,
+            ),
           ),
         ],
       ),
     );
   }
 
-  // ── Individual key widgets ────────────────────────────────────────────────
+  // ── Individual key widgets ────────────────────────────────────────────────────
 
   Widget _key(String label, double unit) {
     final display = (_mode == _Mode.letters && (_shifted || _capsLock))
         ? label.toUpperCase()
         : label;
-    return GestureDetector(
+    return _PressableKey(
+      width: unit,
+      height: 44,
       onTap: () => _onKey(label),
-      child: Container(
-        width: unit,
-        height: 48,
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          display,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
+      color: _keyBg,
+      pressedColor: _keyBgPressed,
+      child: Text(
+        display,
+        style: const TextStyle(
+          color: _keyText,
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
         ),
       ),
     );
   }
 
-  Widget _specialKey({
-    required double width,
-    required bool active,
-    required Widget child,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: width,
-        height: 48,
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        decoration: BoxDecoration(
-          gradient: active
-              ? const LinearGradient(
-                  colors: [Color(0xFF6C3EF5), Color(0xFF3E9EF5)])
-              : null,
-          color: active ? null : Colors.white.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(8),
-          border: active
-              ? null
-              : Border.all(color: Colors.white.withValues(alpha: 0.07)),
-        ),
-        alignment: Alignment.center,
-        child: child,
-      ),
-    );
-  }
-
-  // ── Emoji grid ────────────────────────────────────────────────────────────
+  // ── Emoji grid ────────────────────────────────────────────────────────────────
 
   Widget _buildEmojiGrid() {
     return SizedBox(
-      height: 224,
+      height: 210,
       child: GridView.builder(
         padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -385,87 +489,89 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
           childAspectRatio: 1,
         ),
         itemCount: _emojis.length,
-        itemBuilder: (ctx, i) => GestureDetector(
-          onTap: () { _haptic(); _insert(_emojis[i]); },
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7),
-              color: Colors.white.withValues(alpha: 0.04),
-            ),
-            child: Text(_emojis[i],
-                style: const TextStyle(fontSize: 20)),
-          ),
+        itemBuilder: (ctx, i) => _PressableKey(
+          onTap: () {
+            _haptic();
+            _insert(_emojis[i]);
+          },
+          color: _keyBg,
+          pressedColor: _keyBgPressed,
+          margin: EdgeInsets.zero,
+          child: Text(_emojis[i], style: const TextStyle(fontSize: 18)),
         ),
       ),
     );
   }
 
-  // ── Bottom row: space + done (+ backspace on non-letter modes) ────────────
+  // ── Bottom row ────────────────────────────────────────────────────────────────
 
   Widget _buildBottomRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: [
-          if (_mode != _Mode.letters && _mode != _Mode.emojis)
+          if (_mode != _Mode.letters)
             _bottomKey(
               flex: 1,
-              child: Icon(Icons.backspace_outlined,
-                  color: Colors.white.withValues(alpha: 0.7), size: 16),
-              onTap: () { _haptic(); _backspace(); },
+              child: const Icon(
+                Icons.backspace_outlined,
+                color: _keyText,
+                size: 16,
+              ),
+              onTap: () {
+                _haptic();
+                _backspace();
+              },
+              special: true,
             ),
-          if (_mode == _Mode.emojis)
-            _bottomKey(
-              flex: 1,
-              child: Icon(Icons.backspace_outlined,
-                  color: Colors.white.withValues(alpha: 0.7), size: 16),
-              onTap: () { _haptic(); _backspace(); },
-            ),
-          // Space bar
           _bottomKey(
-            flex: 4,
-            child: Text('space',
-                style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.45),
-                    fontSize: 13)),
-            onTap: () { _haptic(); _insert(' '); },
+            flex: _mode == _Mode.letters ? 5 : 4,
+            child: const Text(
+              'space',
+              style: TextStyle(
+                color: _spaceTextColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            onTap: () {
+              _haptic();
+              _insert(' ');
+            },
           ),
-          // Haptic toggle
           _bottomKey(
             flex: 2,
-            gradient: _hapticEnabled,
+            accent: _hapticEnabled,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.vibration_rounded,
-                  size: 16,
-                  color: _hapticEnabled
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.5),
+                  size: 15,
+                  color: _hapticEnabled ? Colors.white : _spaceTextColor,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 3),
                 Text(
                   _hapticEnabled ? 'ON' : 'OFF',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: _hapticEnabled
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.5),
+                    color: _hapticEnabled ? Colors.white : _spaceTextColor,
                   ),
                 ),
               ],
             ),
             onTap: () => setState(() => _hapticEnabled = !_hapticEnabled),
+            special: !_hapticEnabled,
           ),
-          // Done / return
           _bottomKey(
             flex: 2,
-            gradient: true,
-            child: const Icon(Icons.keyboard_return_rounded,
-                color: Colors.white, size: 18),
+            accent: true,
+            child: const Icon(
+              Icons.keyboard_return_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
             onTap: () => widget.onDone?.call(),
           ),
         ],
@@ -477,38 +583,21 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
     required int flex,
     required Widget child,
     required VoidCallback onTap,
-    bool gradient = false,
+    bool accent = false,
+    bool special = false,
   }) {
+    final color =
+        accent ? _accentColor : special ? _specialKeyBg : _keyBg;
+    final pressedColor =
+        accent ? _accentPressed : special ? _specialKeyBgPressed : _keyBgPressed;
     return Expanded(
       flex: flex,
-      child: GestureDetector(
+      child: _PressableKey(
+        height: 46,
         onTap: onTap,
-        child: Container(
-          height: 50,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(
-            gradient: gradient
-                ? const LinearGradient(
-                    colors: [Color(0xFF6C3EF5), Color(0xFF3E9EF5)])
-                : null,
-            color: gradient ? null : Colors.white.withValues(alpha: 0.07),
-            borderRadius: BorderRadius.circular(10),
-            border: gradient
-                ? null
-                : Border.all(color: Colors.white.withValues(alpha: 0.07)),
-            boxShadow: gradient
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF6C3EF5).withValues(alpha: 0.35),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    )
-                  ]
-                : null,
-          ),
-          alignment: Alignment.center,
-          child: child,
-        ),
+        color: color,
+        pressedColor: pressedColor,
+        child: child,
       ),
     );
   }

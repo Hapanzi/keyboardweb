@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'custom_keyboard.dart';
+
 class KeyboardTestPage extends StatefulWidget {
   const KeyboardTestPage({super.key});
 
@@ -7,103 +9,124 @@ class KeyboardTestPage extends StatefulWidget {
   State<KeyboardTestPage> createState() => _KeyboardTestPageState();
 }
 
-class _KeyboardTestPageState extends State<KeyboardTestPage>
-    with WidgetsBindingObserver {
-  final TextEditingController controller1 = TextEditingController();
-  final TextEditingController controller2 = TextEditingController();
+class _KeyboardTestPageState extends State<KeyboardTestPage> {
+  final _ctrl1 = TextEditingController();
+  final _ctrl2 = TextEditingController();
+  final _fn1 = FocusNode();
+  final _fn2 = FocusNode();
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
+  bool _keyboardVisible = false;
+  TextEditingController? _activeCtrl;
+  FocusNode? _activeFn;
+
+  bool get _useCKB => isMobileWeb(context);
+
+  void _openKeyboard(TextEditingController ctrl, FocusNode fn) {
+    FocusScope.of(context).requestFocus(fn);
+    setState(() {
+      _activeCtrl = ctrl;
+      _activeFn = fn;
+      _keyboardVisible = true;
+    });
   }
 
-  @override
-  void didChangeMetrics() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      FocusManager.instance.primaryFocus?.unfocus();
-      setState(() {});
+  void _dismissKeyboard() {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _activeCtrl = null;
+      _activeFn = null;
+      _keyboardVisible = false;
     });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    _ctrl1.dispose();
+    _ctrl2.dispose();
+    _fn1.dispose();
+    _fn2.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 40),
-
-                      const Text(
-                        'Keyboard Web Test',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+    return Scaffold(
+      resizeToAvoidBottomInset: !_useCKB,
+      body: Column(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: _useCKB ? _dismissKeyboard : null,
+              behavior: HitTestBehavior.translucent,
+              child: SafeArea(
+                child: ListView(
+                  padding: const EdgeInsets.all(24),
+                  children: [
+                    const Text(
+                      'Custom Keyboard Demo',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
-
-                      const SizedBox(height: 40),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: TextField(
-                          controller: controller1,
-                          decoration: const InputDecoration(
-                            labelText: 'Field 1',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _useCKB
+                          ? 'Custom keyboard active (mobile web)'
+                          : 'System keyboard active (desktop/native)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: _useCKB ? Colors.teal : Colors.grey,
                       ),
-
-                      const SizedBox(height: 20),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: TextField(
-                          controller: controller2,
-                          decoration: const InputDecoration(
-                            labelText: 'Field 2',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
+                    ),
+                    const SizedBox(height: 32),
+                    TextField(
+                      controller: _ctrl1,
+                      focusNode: _fn1,
+                      readOnly: _useCKB,
+                      keyboardType: _useCKB ? TextInputType.none : null,
+                      showCursor: true,
+                      onTap: _useCKB ? () => _openKeyboard(_ctrl1, _fn1) : null,
+                      decoration: const InputDecoration(
+                        labelText: 'Field 1',
+                        border: OutlineInputBorder(),
                       ),
-
-                      const SizedBox(height: 40),
-
-                      ElevatedButton(
-                        onPressed: () {},
-                        child: const Text('Test Button'),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: _ctrl2,
+                      focusNode: _fn2,
+                      readOnly: _useCKB,
+                      keyboardType: _useCKB ? TextInputType.none : null,
+                      showCursor: true,
+                      onTap: _useCKB ? () => _openKeyboard(_ctrl2, _fn2) : null,
+                      decoration: const InputDecoration(
+                        labelText: 'Field 2',
+                        border: OutlineInputBorder(),
                       ),
-
-                      const SizedBox(height: 200),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+                    ValueListenableBuilder(
+                      valueListenable: _ctrl1,
+                      builder: (context, v, child) => Text('Field 1: ${v.text}'),
+                    ),
+                    const SizedBox(height: 8),
+                    ValueListenableBuilder(
+                      valueListenable: _ctrl2,
+                      builder: (context, v, child) => Text('Field 2: ${v.text}'),
+                    ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ),
           ),
-        ),
+          if (_useCKB && _keyboardVisible)
+            CustomKeyboard(
+              controller: _activeCtrl,
+              focusNode: _activeFn,
+              onDone: _dismissKeyboard,
+            ),
+        ],
       ),
     );
   }
